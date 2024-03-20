@@ -1,6 +1,8 @@
 package main
 
 import (
+	"try-standard-layout/internal/middleware"
+	"try-standard-layout/internal/postgres"
 	"try-standard-layout/internal/router"
 	"try-standard-layout/internal/server"
 
@@ -10,7 +12,17 @@ import (
 func main() {
 	e := echo.New()
 
-	srv := server.New()
+	psg := postgres.New()
+
+	db, err := postgres.Connect()
+	if err != nil {
+		return
+	}
+	defer postgres.Close(db)
+
+	middleware.Set(e, db)
+
+	srv := server.New(psg)
 
 	router.New(e, srv)
 
